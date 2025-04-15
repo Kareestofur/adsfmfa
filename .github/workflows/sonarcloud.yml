@@ -24,10 +24,10 @@ jobs:
       - name: Analyze with SonarCloud
         uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
         env:
-          SONAR_TOKEN: ${{ secrets.ASDFMFA }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args:
-            -Dsonar.projectKey=Kareestofur_adsfmfa
+            -Dsonar.projectKey=Kareestofur_adsfmfascan
             -Dsonar.organization=kareestofur
             -Dsonar.verbose=true
           projectBaseDir: "Neos.IdentityServer 3.1"
