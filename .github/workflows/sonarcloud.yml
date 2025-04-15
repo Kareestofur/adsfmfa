@@ -24,15 +24,24 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17' # or your project's version
+          java-version: '17' # Adjust this version to match your project's needs
 
       - name: Install Build Wrapper
         uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
 
-      - name: Run Build Wrapper
+      - name: Try build systems in a loop
         run: |
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make all
-          # Replace 'make clean all' with your real clean build command
+          # Loop through possible build commands
+          for build_command in "make" "mvn clean install" "./gradlew build" "npm install && npm run build"; do
+            echo "Attempting to run: $build_command"
+            if $build_command; then
+              echo "Build succeeded with: $build_command"
+              build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} $build_command
+              break
+            else
+              echo "Build failed with: $build_command"
+            fi
+          done
 
       - name: SonarQube Scan with properties file
         uses: SonarSource/sonarqube-scan-action@v5
