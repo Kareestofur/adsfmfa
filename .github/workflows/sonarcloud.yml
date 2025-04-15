@@ -1,33 +1,49 @@
-name: SonarCloud analysis
+name: SonarQube (SonarCloud)
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
   pull_request:
-    branches: [ "master" ]
-  workflow_dispatch:
-
-permissions:
-  pull-requests: read
+    types: [opened, synchronize, reopened]
 
 jobs:
-  Analysis:
+  build:
+    name: Build and analyze with SonarCloud
     runs-on: ubuntu-latest
+    env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed for SonarCloud to detect all code history
 
-      - name: List workspace contents
-        run: ls -R
+      - name: Set up Java (if needed)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17' # or your project's version
 
-      - name: Analyze with SonarCloud
-        uses: SonarSource/sonarcloud-github-action@4006f663ecaf1f8093e8e4abb9227f6041f52216
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
+
+      - name: Run Build Wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} make clean all
+          # Replace 'make clean all' with your real clean build command
+
+      - name: SonarQube Scan with properties file
+        uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          args:
-            -Dsonar.projectKey=kareestofur_adsbmfascan
-            -Dsonar.organization=kareestofur
-            -Dsonar.verbose=true
-          projectBaseDir: "Neos.IdentityServer 3.1"
+          args: >
+            --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json"
+
+      - name: Upload build wrapper output (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-wrapper-output
+          path: ${{ env.BUILD_WRAPPER_OUT_DIR }}
