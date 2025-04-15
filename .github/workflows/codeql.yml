@@ -1,0 +1,46 @@
+name: "CodeQL"
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    # Sequence of patterns matched against refs/heads
+    branches: [master]
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly scan
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [cpp]  # Change this to your language(s): [javascript, python, java, cpp, csharp, go, ruby]
+        build-mode: [manual]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+      - if: matrix.build-mode == 'manual'
+        name: Attempt naive build loop
+        shell: bash
+        run: |
+          echo "Attempting to compile all files recursively..."
+          for file in $(find . -name '*.c' -o -name '*.cpp'); do
+            echo "Compiling $file..."
+            g++ -c "$file" -o "/tmp/$(basename "$file").o" || echo "Failed to compile $file"
+          done
+          echo "Naive build loop finished."
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
