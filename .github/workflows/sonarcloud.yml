@@ -29,4 +29,5 @@ jobs:
           args:
             -Dsonar.projectKey=Kareestofur_adsfmfa
             -Dsonar.organization=kareestofur
-          projectBaseDir: "adsfmfa/Neos.IdentityServer 3.1"
+            -Dsonar.verbose=true
+          projectBaseDir: "Neos.IdentityServer 3.1"
