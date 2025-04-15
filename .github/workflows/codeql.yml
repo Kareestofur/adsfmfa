@@ -39,6 +39,28 @@ jobs:
             echo "Skipping: $file (build failed)"
           done
           echo "Build loop complete."
+      - name: Export CodeQL SARIF results to CSV
+        if: always()
+        run: |
+          echo "Parsing CodeQL results for ${{ matrix.language }}..."
+
+          SARIF_FILE=$(find . -name 'results.sarif' | head -n 1)
+          if [ -z "$SARIF_FILE" ]; then
+            echo "No SARIF file found for language ${{ matrix.language }}"
+            exit 0
+          fi
+
+          jq -r '
+            ["Rule ID", "Message", "File", "Start Line"],
+            (.runs[].results[] | [
+              .ruleId,
+              .message.text,
+              .locations[0].physicalLocation.artifactLocation.uri,
+              .locations[0].physicalLocation.region.startLine
+            ]) | @csv
+          ' "$SARIF_FILE" > "codeql-vulns-${{ matrix.language }}.csv"
+
+          echo "CSV for ${{ matrix.language }} vulnerabilities written to codeql-vulns-${{ matrix.language }}.csv"
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
