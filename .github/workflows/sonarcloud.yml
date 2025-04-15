@@ -27,7 +27,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args:
-            -Dsonar.projectKey=Kareestofur_adsfmfascan
+            -Dsonar.projectKey=kareestofur_adsbmfascan
             -Dsonar.organization=kareestofur
             -Dsonar.verbose=true
           projectBaseDir: "Neos.IdentityServer 3.1"
