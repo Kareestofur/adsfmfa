@@ -1,23 +1,22 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
     branches: [master]
   pull_request:
-    # Sequence of patterns matched against refs/heads
     branches: [master]
   schedule:
-    - cron: '0 0 * * 0'  # Weekly scan
+    - cron: '0 0 * * 0' # weekly
 
 jobs:
   analyze:
-    name: Analyze
+    name: CodeQL Analyze All
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        language: [cpp]  # Change this to your language(s): [javascript, python, java, cpp, csharp, go, ruby]
-        build-mode: [manual]
+        language: [javascript, python, cpp, csharp, java]  # Add/remove based on your repo
+        build-mode: [manual]  # cpp/java/csharp require build, rest do not
 
     steps:
       - name: Checkout repository
@@ -30,15 +29,16 @@ jobs:
           build-mode: ${{ matrix.build-mode }}
 
       - if: matrix.build-mode == 'manual'
-        name: Attempt naive build loop
-        shell: bash
+        name: Naive Build Step (only for compiled langs)
         run: |
-          echo "Attempting to compile all files recursively..."
-          for file in $(find . -name '*.c' -o -name '*.cpp'); do
-            echo "Compiling $file..."
-            g++ -c "$file" -o "/tmp/$(basename "$file").o" || echo "Failed to compile $file"
+          echo "Starting naive build attempt..."
+          for file in $(find . -name '*.c' -o -name '*.cpp' -o -name '*.cs' -o -name '*.java'); do
+            echo "Compiling $file"
+            gcc -c "$file" -o "/tmp/$(basename "$file").o" 2>/dev/null || \
+            g++ -c "$file" -o "/tmp/$(basename "$file").o" 2>/dev/null || \
+            echo "Skipping: $file (build failed)"
           done
-          echo "Naive build loop finished."
+          echo "Build loop complete."
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
