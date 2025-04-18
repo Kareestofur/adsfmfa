@@ -5,7 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "nuget"
+  - package-ecosystem: "github-actions"
     directory: "/Neos.IdentityServer 3.1" # Adjust if your .csproj or packages.config is in a subfolder
     schedule:
       interval: "weekly"
