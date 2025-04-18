@@ -5,7 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "nuget"
+    directory: "/" # Adjust if your .csproj or packages.config is in a subfolder
     schedule:
       interval: "weekly"
